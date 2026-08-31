@@ -47,7 +47,7 @@ The documentation site is the canonical source of truth for usage guides and sup
 
 | Runtime | Supported line |
 | --- | --- |
-| Node.js | `>=20` |
+| Node.js | `>=22` |
 | NestJS | `11.x` |
 | tRPC | `11.x` |
 | Zod | `4.x`, optional peer |
