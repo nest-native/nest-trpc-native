@@ -6,7 +6,7 @@ Security reports are taken seriously. Please avoid posting exploit details, secr
 
 The current stabilization line is documented in [website/docs/support-policy.md](website/docs/support-policy.md). At the time of writing, the supported runtime targets are:
 
-- Node.js `>=20`
+- Node.js `>=22`
 - NestJS `11.x`
 - tRPC `11.x`
 

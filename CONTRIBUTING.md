@@ -12,7 +12,7 @@ npm run build
 npm run test
 ```
 
-The workspace uses Node.js `>=20` and npm workspaces.
+The workspace uses Node.js `>=22` and npm workspaces.
 
 ## Design Rules
 

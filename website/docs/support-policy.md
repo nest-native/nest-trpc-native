@@ -8,7 +8,7 @@ This page defines the supported contract for the current `0.3.x` stabilization l
 
 ## Runtime Compatibility
 
-- Node.js `>=20`
+- Node.js `>=22`
 - NestJS `11.x`
 - tRPC `11.x`
 

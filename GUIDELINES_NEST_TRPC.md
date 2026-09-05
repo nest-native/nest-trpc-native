@@ -8,7 +8,7 @@ Every single decision must follow NestJS philosophy exactly as @nestjs/graphql a
 - Everything must be decorator-first, OOP, and heavily use NestJS DI.
 - Mirror the exact DX of @nestjs/graphql (code-first approach with autoSchemaFile).
 - Current stabilization support line:
-  - Node.js `>=20`
+  - Node.js `>=22`
   - NestJS `11.x`
   - tRPC `11.x`
 - Full integration with NestJS enhancer pipeline is NON-NEGOTIABLE:
