@@ -44,6 +44,7 @@ updates:
           - "reflect-metadata"
           - "rxjs"
           - "zod"
+          - "@nestjs/testing"
 
   - package-ecosystem: "npm"
     directory: "/website"
