@@ -21,8 +21,16 @@ updates:
           - "patch"
         patterns:
           - "*"
-      nest-trpc-peer-minor-patch:
+      # Majors are grouped deliberately, not just minors and patches. The
+      # @nestjs/* packages are a set with peer dependencies on each other, so a
+      # major that arrives one-package-per-PR produces a tree npm refuses to
+      # install: NestJS 12 opened fifteen separate PRs across this org, each
+      # bumping one package and leaving its siblings on 11, and every one failed
+      # `npm ci` with ERESOLVE before a single test ran. Grouped, a major
+      # arrives as one PR that can actually be evaluated.
+      nest-trpc-peer:
         update-types:
+          - "major"
           - "minor"
           - "patch"
         patterns:
