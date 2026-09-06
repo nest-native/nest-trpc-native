@@ -2,6 +2,33 @@
 
 ## Unreleased
 
+- NestJS 12 support: the published `@nestjs/common` and `@nestjs/core` peer
+  ranges widen from `^11.0.0` to `^11.0.0 || ^12.0.0`. The only code change is
+  internal: NestJS 12 is ESM-only and its exports map resolves files, not
+  directory indexes, so the deep import of `Controller` from
+  `@nestjs/common/interfaces` (a directory) failed to compile against 12; it is
+  now a local `type Controller = object` alias, which is how Nest 12 defines the
+  type. A new package test (`nestjs-deep-imports.spec.ts`) scans every
+  `@nestjs/*` deep import and fails if it targets anything but a real file, so
+  the trap cannot come back. Repo tooling: the devDependencies and lockfile stay
+  on 11 (the default suite keeps testing it) and a dedicated CI leg
+  (`nestjs-latest-major`) installs the 12 set on top of the lockfile, proves
+  every workspace resolves 12 (`scripts/check-nestjs-major.mjs`), and runs the
+  suite and every sample against it. Dependabot now groups the `@nestjs/*`
+  peer set across majors too, so the next major arrives as one installable PR
+  instead of one ERESOLVE per package. Docs: support policy, installation,
+  README compatibility table, claims matrix, and the Nest-internals upgrade
+  checklist state the widened range; the support policy notes that NestJS 12
+  orders lifecycle hooks by component hierarchy level (this package assumes no
+  cross-provider hook order). The package README (`packages/trpc/README.md`,
+  the one npm shows) still said Node `>=20` / NestJS `11.x` — the Node 20
+  sunset had missed it too — and now matches; a new release check
+  (`scripts/check-compat-tables.mjs`, in `npm run release:check`) pins both
+  README compatibility tables, the support policy, installation, and the
+  guidelines' support line to the manifest's `engines` floor and `@nestjs/*`
+  peer range. The Node floor stays `>=22`; every place that states it now says
+  NestJS 12 needs `>=22.12` of it (a CommonJS app loads the ESM-only 12
+  through Node's `require(esm)`).
 - Tests + internal: closed the mutation-testing survivors surfaced in the
   generators and param metadata — added a `param-metadata` guard test (an
   `undefined` propertyKey must not attach metadata to a property literally named

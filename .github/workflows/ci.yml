@@ -250,6 +250,51 @@ jobs:
       - name: Run focused sample checks
         run: npm run sample:focused
 
+  nestjs-latest-major:
+    name: NestJS 12 compatibility (Node 22)
+    runs-on: ubuntu-latest
+    # The published peer range allows @nestjs/common and @nestjs/core
+    # ^11.0.0 || ^12.0.0, but the devDependencies and the lockfile stay on 11 so
+    # the default legs above keep testing that major. This leg installs the
+    # NestJS 12 set on top of the lockfile (--no-save) and runs the suite plus
+    # every sample against it, so the 12 end of the range is a tested claim
+    # rather than an assumption.
+    #
+    # `--workspaces --include-workspace-root` is load-bearing: the samples pin
+    # the @nestjs/* set to an exact 11.x, so a root-only install fails with
+    # ERESOLVE (or, with looser pins, nests an 11 copy under each sample and
+    # the samples silently keep running on 11). Adding the 12 specs to every
+    # workspace replaces those edges, and check-nestjs-major.mjs then proves
+    # what each workspace actually resolves before anything runs.
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install the NestJS 12 set
+        run: |
+          npm install --no-save --workspaces --include-workspace-root \
+            @nestjs/common@^12.0.0 \
+            @nestjs/core@^12.0.0 \
+            @nestjs/testing@^12.0.0 \
+            @nestjs/platform-express@^12.0.0 \
+            @nestjs/platform-fastify@^12.0.0 \
+            @nestjs/microservices@^12.0.0
+          node -e "console.log('@nestjs/core', JSON.parse(require('fs').readFileSync('node_modules/@nestjs/core/package.json', 'utf8')).version)"
+
+      - name: Prove every workspace resolves NestJS 12
+        run: node scripts/check-nestjs-major.mjs 12
+
+      - name: Run the suite against NestJS 12
+        run: npm test
+
+      - name: Run the samples against NestJS 12
+        run: npm run ci:sample
+
   release-and-security:
     name: Release and security checks
     runs-on: ubuntu-latest

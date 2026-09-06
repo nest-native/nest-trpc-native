@@ -51,11 +51,13 @@ See the showcase sample for a full end-to-end application:
 
 | Runtime | Supported line |
 | --- | --- |
-| Node.js | `>=20` |
-| NestJS | `11.x` |
+| Node.js | `>=22` (`>=22.12` to load NestJS 12 from CommonJS) |
+| NestJS | `^11.0.0 \|\| ^12.0.0` |
 | tRPC | `11.x` |
 | Zod | `4.x`, optional peer |
 | Adapters | Express, Fastify |
+
+Both NestJS majors are tested in CI. NestJS 12 is ESM-only: a CommonJS app loads it through Node's `require(esm)`, which is unflagged on Node `>=22.12` — within this package's `>=22` line, so run NestJS 12 on a current Node 22 or 24.
 
 ## Installation
 

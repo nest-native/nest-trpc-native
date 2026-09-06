@@ -8,8 +8,8 @@ Every single decision must follow NestJS philosophy exactly as @nestjs/graphql a
 - Everything must be decorator-first, OOP, and heavily use NestJS DI.
 - Mirror the exact DX of @nestjs/graphql (code-first approach with autoSchemaFile).
 - Current stabilization support line:
-  - Node.js `>=22`
-  - NestJS `11.x`
+  - Node.js `>=22` (`>=22.12` to load NestJS 12 from CommonJS — see section 12)
+  - NestJS `^11.0.0 || ^12.0.0` (both majors tested — see section 12)
   - tRPC `11.x`
 - Full integration with NestJS enhancer pipeline is NON-NEGOTIABLE:
   - @UseGuards, @UseInterceptors, @UsePipes, @UseFilters must work exactly as on @Controller or @Resolver.
@@ -98,7 +98,7 @@ This is not a suggestion — it is the project constitution.
   - Inspect install/lifecycle scripts (`preinstall`, `install`, `postinstall`, `prepare`) for malicious behavior risk.
   - Watch for typosquatting, suspicious package ownership changes, abandoned packages, and sudden lockfile churn.
   - Treat Dependabot PRs as automation assistance, not approval to merge:
-    - Keep major updates isolated unless a maintainer explicitly requests grouping.
+    - Keep major updates isolated, with one deliberate exception: the `nest-trpc-peer` group in `.github/dependabot.yml` — the peer/runtime set: `@nestjs/common`, `@nestjs/config`, `@nestjs/core`, `@nestjs/microservices`, `@nestjs/platform-express`, `@nestjs/platform-fastify`, `@nestjs/testing`, `@trpc/*`, `reflect-metadata`, `rxjs`, and `zod` — is grouped across major, minor, and patch. The `@nestjs/*` packages peer on each other, so a major that arrives one-package-per-PR leaves its siblings behind and fails `npm ci` with ERESOLVE before a single test runs (NestJS 12 did exactly that, fifteen PRs across the org); the other runtime peers ride in the same group so a framework major is evaluated together with the peers it ships against. Grouped, a major arrives as one PR that can actually be evaluated. Every `@nestjs/*` package the repo declares that peers on `common`/`core` belongs in the group — one left out reproduces the split-major failure.
     - Verify `packages/trpc/package.json` still has `"dependencies": {}` after every dependency PR.
     - Run the same validation expected for a human-authored dependency update.
     - Do not auto-accept lockfile churn without understanding which direct dependency caused it.
@@ -119,6 +119,7 @@ This is not a suggestion — it is the project constitution.
 - Never publish if any sample still points to an older package version.
 - `npm run release:check` is a release blocker:
   - sample version sync must pass
+  - compatibility-table sync must pass: both README compatibility tables, the support policy, installation, and the support line above carry the `engines` floor and the `@nestjs/*` peer range from `packages/trpc/package.json` (`scripts/check-compat-tables.mjs`)
   - README link validation must pass
   - workspace resolution must show the target version everywhere
   - package tarball validation must pass and exclude unintended artifacts such as `.tsbuildinfo`
@@ -177,3 +178,69 @@ redundant code whose mutant is behaviorally equivalent (with a CHANGELOG note);
 mark a genuine equivalent with `// Stryker disable next-line <Mutator>:
 <reason>`; or, for timing/randomness, assert bounds/progression. Keep CI fast —
 that is a deliberate contract.
+
+### 12. Peer majors — NestJS 12 and the recipe for the next one
+
+**The peer-major recipe (applied to NestJS 12 on 2026-09-06).** A new major of a
+peer dependency is *widened into*, never *swapped to*:
+
+1. Widen the published range in `packages/trpc/package.json`
+   (`"@nestjs/common": "^11.0.0 || ^12.0.0"`, same for `@nestjs/core`).
+2. Keep the devDependencies and the lockfile on the older major, so the default
+   `npm ci` + suite + samples keep testing that end of the range.
+3. Add a dedicated CI leg that installs the newer major on top of the lockfile
+   with `--no-save` and runs the suite **and every sample** against it. The
+   `nestjs-latest-major` job in `.github/workflows/ci.yml` is the template.
+   Both ends of the range are then tested claims, not assumptions.
+4. Prove what the samples actually resolve. The samples pin the `@nestjs/*`
+   set to an exact version, so a root-only install either fails with ERESOLVE
+   or nests the old major under each sample and the samples "pass on 12"
+   while running on 11. The leg installs with
+   `--workspaces --include-workspace-root` and runs
+   `node scripts/check-nestjs-major.mjs 12`, which resolves every declared
+   framework package from inside every workspace and fails on a wrong major.
+5. Update the support line here, both README compatibility tables
+   (`README.md` and `packages/trpc/README.md` — the one npm shows),
+   `website/docs/support-policy.md`, `website/docs/installation.md`, and the
+   claims matrix, in the same PR as the code and the leg.
+   `scripts/check-compat-tables.mjs` (in `npm run release:check`) fails when
+   any of them lags the manifest's `engines` floor or `@nestjs/*` peer range —
+   the package README was left on Node `>=20` by the Node 20 sunset and on
+   NestJS `11.x` by the first pass of this widening, which is why the check
+   exists.
+
+A Dependabot PR that moves the devDependencies and lockfile to the new major is
+a separate, deliberate decision (it drops the old major from the default suite);
+it is not implied by widening the peer range.
+
+**NestJS 12 is ESM-only — never deep-import a directory index from `@nestjs/*`.**
+`@nestjs/common` and `@nestjs/core` ship an exports map of
+`{ ".", "./internal", "./*.js", "./*": "./*.js" }`. A deep import of a *file*
+path such as `@nestjs/core/injector/constants` resolves (to
+`./injector/constants.js`) and is fine. A deep import of a *directory* such as
+`@nestjs/common/interfaces` does not: there is no `interfaces.js`, and ESM does
+not resolve a directory index through `./*` — TS2307 at build time,
+`ERR_MODULE_NOT_FOUND` at runtime. That one import was the only thing in this
+package that broke on 12; it is now a local `type Controller = object` alias
+(exactly how Nest 12 defines the type). `packages/trpc/test/nestjs-deep-imports.spec.ts`
+enforces the rule: it scans every `.ts` file in the package for
+`@nestjs/<pkg>/<subpath>` specifiers and fails unless `<subpath>.js` is a
+regular file inside the installed package, on whichever Nest major is
+installed. Do not work around it with a deeper path such as
+`@nestjs/common/interfaces/controllers/controller.interface` — that is still an
+internal path, and the type is plain `object` on 12 anyway.
+
+**The Node floor stays `>=22`; NestJS 12 needs `>=22.12` of it.** This package
+publishes CommonJS, and a CommonJS app loads the ESM-only NestJS 12 through
+Node's `require(esm)`, which is unflagged on Node `>=22.12` (and `>=20.19`,
+below this package's floor). `engines.node` stays `>=22` because it describes
+the whole peer range — the NestJS 11 end runs on any Node 22 — but every place
+that states the floor (the support line above, both READMEs, the support
+policy, installation) carries the `>=22.12` qualifier for 12, so nobody reads
+`>=22` as "any Node 22 runs NestJS 12". Raising `engines` to `>=22.12` would
+be a floor change for 11 users and is a separate decision.
+
+**NestJS 12 reorders lifecycle hooks.** `onModuleInit`, `onApplicationBootstrap`
+and the shutdown hooks now run by component hierarchy level, not by
+registration order. Nothing in this package — code, tests, or samples — may
+assume a cross-provider lifecycle order, and no test may assert one.

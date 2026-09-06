@@ -17,9 +17,11 @@ Today, the required context creation APIs are still internal in Nest, so this pa
 ## Upgrade Checklist (Nest major bump)
 
 1. Verify `createTrpcEnhancerRuntime()` compiles against the target Nest version.
-2. Run `npm run ci` (coverage + adapter smoke + focused samples).
-3. Validate guard/interceptor/pipe/filter behavior in `sample/00-showcase`.
-4. Publish compatibility notes in changelog/release docs.
+2. Keep every `@nestjs/*` deep import pointed at a file, never a directory index — `packages/trpc/test/nestjs-deep-imports.spec.ts` enforces this. NestJS 12 is ESM-only; its exports map (`"./*": "./*.js"`) resolves files, not directory indexes such as `@nestjs/common/interfaces`.
+3. Run `npm run ci` (coverage + adapter smoke + focused samples).
+4. Validate guard/interceptor/pipe/filter behavior in `sample/00-showcase`.
+5. Widen the published peer range and add a CI leg that installs the new major (the `nestjs-latest-major` job is the template), so both ends of the range are tested.
+6. Publish compatibility notes in changelog/release docs.
 
 ## Public API Roadmap
 
