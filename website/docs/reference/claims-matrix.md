@@ -35,6 +35,8 @@ This page maps the main public claims to current verification evidence. It is a 
 | Filters can remap procedure errors. | `packages/trpc/test/router/trpc-router-lifecycle.spec.ts`, `website/docs/enhancers/filters.md`, `sample/02-enhancers-guards-pipes-filters` | Covered by package tests and samples. |
 | Request-scoped providers work with tRPC calls. | `packages/trpc/test/router/trpc-router.spec.ts`, `website/docs/advanced/request-scope.md`, `sample/03-context-request-scope`, `sample/00-showcase/scripts/smoke-express.ts` | Covered by package tests and smoke samples. |
 | NestJS internals are isolated behind a compatibility boundary. | `website/docs/advanced/nest-internals.md`, `packages/trpc/context/trpc-enhancer-runtime.factory.ts` | Documented and isolated in code. |
+| NestJS `^11.0.0 \|\| ^12.0.0` — both majors run the suite and every sample. | `.github/workflows/ci.yml` (default legs on 11, `nestjs-latest-major` on 12), `scripts/check-nestjs-major.mjs` | Covered by CI on both ends of the peer range; the 12 leg proves what each workspace resolves before running. |
+| No `@nestjs/*` deep import targets a directory index (NestJS 12 is ESM-only; its exports map resolves files only). | `packages/trpc/test/nestjs-deep-imports.spec.ts` | Covered by a package test that scans every source and test file. |
 
 ## Adapter, Validation, and Client Claims
 

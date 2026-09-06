@@ -48,10 +48,12 @@ The documentation site is the canonical source of truth for usage guides and sup
 | Runtime | Supported line |
 | --- | --- |
 | Node.js | `>=22` |
-| NestJS | `11.x` |
+| NestJS | `^11.0.0 \|\| ^12.0.0` |
 | tRPC | `11.x` |
 | Zod | `4.x`, optional peer |
 | Adapters | Express, Fastify |
+
+Both ends of the NestJS range are tested, not assumed: the default suite and samples run on 11 (the lockfile), and a dedicated CI leg (`nestjs-latest-major`, "NestJS 12 compatibility (Node 22)") installs the NestJS 12 set on top of the lockfile, proves every workspace resolves 12 (`scripts/check-nestjs-major.mjs`), then runs the suite and every sample against it.
 
 For the supported API surface and compatibility policy, see [website/docs/support-policy.md](website/docs/support-policy.md).
 

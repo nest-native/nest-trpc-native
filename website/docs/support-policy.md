@@ -9,8 +9,15 @@ This page defines the supported contract for the current `0.3.x` stabilization l
 ## Runtime Compatibility
 
 - Node.js `>=22`
-- NestJS `11.x`
+- NestJS `^11.0.0 || ^12.0.0`
 - tRPC `11.x`
+
+Both NestJS majors are tested claims. The default suite and samples run on 11; a dedicated CI leg (`nestjs-latest-major`) installs the NestJS 12 set on top of the lockfile, proves every workspace resolves 12, and runs the suite and every sample against it.
+
+NestJS 12 notes:
+
+- NestJS 12 is ESM-only and requires Node `>=20.19` / `>=22.12`; this package already requires Node `>=22`.
+- NestJS 12 orders lifecycle hooks (`onModuleInit`, `onApplicationBootstrap`, and the shutdown hooks) by component hierarchy level rather than by registration order. This package does not assume any cross-provider hook order, and application code should not either.
 
 ## Supported Adapters
 
