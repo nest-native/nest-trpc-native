@@ -21,13 +21,16 @@ updates:
           - "patch"
         patterns:
           - "*"
-      # Majors are grouped deliberately, not just minors and patches. The
-      # @nestjs/* packages are a set with peer dependencies on each other, so a
-      # major that arrives one-package-per-PR produces a tree npm refuses to
+      # The peer/runtime set (listed below) is grouped across majors too, not
+      # just minors and patches. The @nestjs/* packages peer on each other, so
+      # a major that arrives one-package-per-PR produces a tree npm refuses to
       # install: NestJS 12 opened fifteen separate PRs across this org, each
       # bumping one package and leaving its siblings on 11, and every one failed
       # `npm ci` with ERESOLVE before a single test ran. Grouped, a major
-      # arrives as one PR that can actually be evaluated.
+      # arrives as one PR that can actually be evaluated, together with the
+      # runtime peers it ships against. Every @nestjs/* package the repo
+      # declares that peers on common/core belongs here - one left out
+      # reproduces the split-major failure.
       nest-trpc-peer:
         update-types:
           - "major"

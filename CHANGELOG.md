@@ -20,7 +20,15 @@
   README compatibility table, claims matrix, and the Nest-internals upgrade
   checklist state the widened range; the support policy notes that NestJS 12
   orders lifecycle hooks by component hierarchy level (this package assumes no
-  cross-provider hook order).
+  cross-provider hook order). The package README (`packages/trpc/README.md`,
+  the one npm shows) still said Node `>=20` / NestJS `11.x` — the Node 20
+  sunset had missed it too — and now matches; a new release check
+  (`scripts/check-compat-tables.mjs`, in `npm run release:check`) pins both
+  README compatibility tables, the support policy, installation, and the
+  guidelines' support line to the manifest's `engines` floor and `@nestjs/*`
+  peer range. The Node floor stays `>=22`; every place that states it now says
+  NestJS 12 needs `>=22.12` of it (a CommonJS app loads the ESM-only 12
+  through Node's `require(esm)`).
 - Tests + internal: closed the mutation-testing survivors surfaced in the
   generators and param metadata — added a `param-metadata` guard test (an
   `undefined` propertyKey must not attach metadata to a property literally named
