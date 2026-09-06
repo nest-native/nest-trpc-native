@@ -15,7 +15,7 @@
   "scripts": {
     "postinstall": "npm run build --workspace @nest-native/trpc",
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build --workspace @nest-native/trpc && npm run typecheck --workspaces --if-present",
     "test": "TS_NODE_PROJECT=tsconfig.spec.json node --loader ts-node/esm ./node_modules/mocha/bin/mocha \"packages/**/*.spec.ts\"",
     "test:cov": "TS_NODE_PROJECT=tsconfig.spec.json nyc node --loader ts-node/esm ./node_modules/mocha/bin/mocha \"packages/**/*.spec.ts\"",
     "test:watch": "TS_NODE_PROJECT=tsconfig.spec.json node --loader ts-node/esm ./node_modules/mocha/bin/mocha -w --watch-files \"packages\" \"packages/**/*.spec.ts\"",
