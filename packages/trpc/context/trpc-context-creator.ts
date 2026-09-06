@@ -6,7 +6,6 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum';
-import { Controller } from '@nestjs/common/interfaces';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
 import { STATIC_CONTEXT } from '@nestjs/core/injector/constants';
 import { TRPCError, TRPC_ERROR_CODE_KEY } from '@trpc/server';
@@ -16,6 +15,19 @@ import { TrpcParamMetadata } from '../decorators/param-metadata.util';
 import { TrpcParamtype } from '../enums';
 
 const TRPC_CONTEXT_TYPE: ContextType = 'rpc';
+
+/**
+ * Instance holder for a router class resolved through the Nest injector.
+ *
+ * This used to be `Controller` from `@nestjs/common/interfaces`. That
+ * specifier is a directory index, and NestJS 12 is ESM-only with an exports
+ * map (`"./*": "./*.js"`) that resolves files, never directories — so the
+ * import fails to compile against 12. Nest 12 defines the type as plain
+ * `object`, and every use here is an instance holder, so a local alias is
+ * exact on both majors. `test/nestjs-deep-imports.spec.ts` keeps every
+ * remaining `@nestjs/*` deep import pointed at a real file.
+ */
+type Controller = object;
 
 interface TrpcHandlerOptions {
   callback: (...args: any[]) => any;
